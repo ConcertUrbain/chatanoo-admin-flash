@@ -1,0 +1,107 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<mx:TitleWindow 
+	xmlns:mx="http://www.adobe.com/2006/mxml" 
+	xmlns:component="dialogs.*"
+	
+	layout="absolute" width="500" height="300" 
+	showCloseButton="true"
+	
+	title="Modifier l'utilisateur"
+	
+	creationComplete="init();"
+	close="cancel();"
+	>
+	
+	<mx:Script>
+		<![CDATA[
+			import mx.managers.PopUpManager;
+			
+			import org.concert_urbain.touratour.api.vos.User;
+			import org.concert_urbain.touratour.events.VOEvent;
+		
+			private var _vo:User;
+			private var _roles:Array = ["user", "admin", "superadmin"];
+			
+			
+			public function init():void
+			{
+				role.dataProvider = _roles;
+			}
+			
+			public function set vo(o:User):void
+			{
+				_vo = o;
+				firstName.text = _vo.firstName == null ? "" : _vo.firstName;
+				lastName.text = _vo.lastName == null ? "" : _vo.lastName;
+				pseudo.text = _vo.pseudo == null ? "" : _vo.pseudo;
+				password.text = _vo.password == null ? "" : _vo.password;
+				email.text = _vo.email == null ? "" : _vo.email;
+				
+				if (_vo.role != null)
+				{
+					var index:int = _roles.indexOf(_vo.role);
+					if (index != -1)
+					{
+						role.selectedIndex = index;
+					}
+				}
+			}
+			
+			private function submit():void
+			{
+				_vo.firstName = firstName.text;
+				_vo.lastName = lastName.text;
+				_vo.pseudo = pseudo.text;
+				_vo.password = password.text;
+				_vo.email = email.text;
+				_vo.role = role.selectedLabel;
+				
+				trace(_vo.password, password.text)
+				
+				dispatchEvent(new VOEvent(VOEvent.CHANGE, _vo));
+				PopUpManager.removePopUp(this);
+			}
+			
+			private function cancel():void
+			{
+				PopUpManager.removePopUp(this);
+			}
+			
+		]]>
+	</mx:Script>	
+
+
+	<mx:VBox horizontalAlign="center" paddingTop="30" width="100%">
+		<mx:HBox width="100%">
+			<mx:Label width="100" textAlign="right" text="Prénom" />
+			<mx:TextInput width="300" id="firstName" />
+		</mx:HBox>
+		<mx:HBox width="100%">
+			<mx:Label width="100" textAlign="right" text="Nom" />
+			<mx:TextInput width="300" id="lastName" />
+		</mx:HBox>
+		<mx:HBox width="100%">
+			<mx:Label width="100" textAlign="right" text="Pseudo" />
+			<mx:TextInput width="300" id="pseudo" />
+		</mx:HBox>
+		<mx:HBox width="100%">
+			<mx:Label width="100" textAlign="right" text="Mot de passe" />
+			<mx:TextInput width="300" id="password" />
+		</mx:HBox>
+		<mx:HBox width="100%">
+			<mx:Label width="100" textAlign="right" text="Email" />
+			<mx:TextInput width="300" id="email" />
+		</mx:HBox>
+		<mx:HBox width="100%">
+			<mx:Label width="100" textAlign="right" text="Role" />
+			<mx:ComboBox width="300" id="role" />
+		</mx:HBox>
+		<mx:HBox width="100%" paddingTop="20" >
+			<mx:Label width="100" textAlign="right" text="" />
+			<mx:Button label="OK" click="submit();"/>
+			<mx:Button label="Annuler" click="cancel();"/>
+		</mx:HBox>
+	</mx:VBox>
+	
+</mx:TitleWindow>

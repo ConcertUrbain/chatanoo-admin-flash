@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mx:TitleWindow xmlns:mx="http://www.adobe.com/2006/mxml" layout="absolute" width="300" height="150">
+	
+	<mx:Script>
+		<![CDATA[
+		
+			import mx.managers.PopUpManager;
+			import org.concert_urbain.touratour.events.*;
+			
+			public var voId:Number;
+			public var voType:String;
+			
+			public function set message(t:String):void
+			{
+				messageText.text = 	t;
+			}
+			
+			private function submit():void
+			{
+				var e:IdEvent = new IdEvent(VOEvent.DELETE, voId);
+				e.data = voType;
+				
+				dispatchEvent(e);
+				
+				PopUpManager.removePopUp(this);
+			}
+			
+			private function cancel():void {
+				PopUpManager.removePopUp(this);
+			}
+			
+		]]>
+	</mx:Script>
+	
+	<mx:VBox  width="100%" paddingTop="20" paddingLeft="10" paddingRight="20">
+		<mx:Text id="messageText" width="100%" textAlign="center" height="50" />
+		<mx:HBox horizontalAlign="center"  width="100%">
+			<mx:Button label="Oui" click="submit();" />
+			<mx:Button label="Non" click="cancel();" />
+		</mx:HBox>
+	</mx:VBox>
+	
+</mx:TitleWindow>

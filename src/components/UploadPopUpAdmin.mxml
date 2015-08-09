@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<component:UploadMedia 
+	xmlns:mx="http://www.adobe.com/2006/mxml"
+	xmlns:component="components.*"
+	xmlns:local="*"
+	
+	horizontalScrollPolicy="off" verticalScrollPolicy="off" 
+	width="100%" height="100%"
+	
+	creationComplete="init();"
+	>
+	
+	<mx:Script>
+		<![CDATA[
+			
+			override protected function init():void
+			{	
+				btnRechercher = boutonRechercher;
+				btnEnvoyer = boutonEnvoyer;
+				txtFilename = filenameText;
+				txtTitle = titleText;
+				progressBar = uploadProgressBar
+				
+				super.init();
+			}
+			
+		]]>
+	</mx:Script>
+	
+	
+	<mx:VBox width="100%" height="100%" >
+		
+		<mx:Label text="Sélectionner un media sur votre ordinateur (jpeg, gif, png, flv, mp4, mp3) :" styleName="titreUpload" />
+		
+		<mx:HBox width="100%">
+			
+			<!-- Formulaire d'Upload -->
+			
+			<mx:Form width="100%">
+				<mx:FormItem width="100%">
+					<mx:HBox width="100%">
+						<mx:Label text="Titre" width="40" textAlign="right" />
+						<mx:TextInput width="100%" id="titleText" text=""/>
+					</mx:HBox>
+					<mx:HBox width="100%">
+						<mx:Label text="Fichier" width="40" textAlign="right" />
+						<mx:TextInput width="100%" id="filenameText" text=""/>
+						<mx:Spacer width="4" />
+						<mx:Button id="boutonRechercher" label="Rechercher..." />
+					</mx:HBox>
+				</mx:FormItem>
+				<mx:FormItem width="100%">
+					<mx:HBox  width="100%">
+						<mx:Label text="%" width="40" textAlign="right" />
+						<mx:VBox paddingTop="4">
+							<mx:ProgressBar width="{filenameText.width}" label="" labelPlacement="bottom" id="uploadProgressBar" />
+						</mx:VBox>
+						<mx:Spacer width="4" />
+						<mx:Button id="boutonEnvoyer"  label="Envoyer" />
+					</mx:HBox>
+				</mx:FormItem>
+			</mx:Form>
+		</mx:HBox>
+	</mx:VBox>
+	
+</component:UploadMedia>

@@ -1,0 +1,124 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<mx:TitleWindow 
+	xmlns:mx="http://www.adobe.com/2006/mxml" 
+	xmlns:component="components.*"
+	
+	layout="absolute" width="700" height="450" 
+	showCloseButton="true"
+	
+	title="Uploader un media"
+	
+	close="cancel();"
+	creationComplete="init()"
+	>
+	
+	<mx:Script>
+		<![CDATA[
+			
+			import mx.collections.ArrayCollection;
+			import mx.managers.PopUpManager;
+			
+			import org.concert_urbain.touratour.UploadEvents;
+			import org.concert_urbain.touratour.api.TAT;
+			import org.concert_urbain.touratour.api.core.events.ServiceEvent;
+			import org.concert_urbain.touratour.api.core.requests.AbstractServiceRequest;
+			import org.concert_urbain.touratour.api.vos.*;
+			import org.concert_urbain.touratour.api.vos.collections.MultiVoCollection;
+			import org.concert_urbain.touratour.api.vos.collections.VoCollection;
+			import org.concert_urbain.touratour.api.vos.datas.*;
+			import org.concert_urbain.touratour.api.vos.events.VoEvent;
+			import org.concert_urbain.touratour.api.vos.medias.*;
+			import org.concert_urbain.touratour.events.*;
+			import org.concert_urbain.touratour.events.IdEvent;
+			import org.concert_urbain.touratour.events.VOEvent;
+
+			
+			private function init():void
+			{
+				uploadComponent.addEventListener(UploadEvents.UPLOAD_INIT, onUpLoadInit, false, 0, true);
+				uploadComponent.addEventListener(UploadEvents.UPLOAD_SUCCESS, onUpLoadSuccess, false, 0, true);
+				uploadComponent.addEventListener(UploadEvents.UPLOAD_ERROR, onUpLoadError, false, 0, true);
+				
+				okButton.enabled = false;
+			}
+			
+			private function enableUploadComponent(bool:Boolean):void
+			{
+				// Envoi des métadonnées à la base
+				// uploadComponent.enabled = bool;
+			}
+			
+			private function onUpLoadInit(e:Event):void
+			{
+				enableUploadComponent(false);
+				okButton.enabled = false;
+			}
+			
+			private function onUpLoadError(e:Event):void
+			{
+				// Permet de recommencer l'upload
+				enableUploadComponent(true);
+			}
+			
+			private function onUpLoadSuccess(e:IdEvent):void
+			{
+				// Média Uploadé
+				var mediaVO:AbstractMedia = uploadComponent.mediaVO;
+				var mediaType:String = uploadComponent.mediaType;
+				
+				// On ouvre le média dans le player
+				mediaPlayer.openMedia(mediaVO, mediaType)
+				
+				okButton.enabled = true;
+			}
+			
+			public function get mediaVO():AbstractMedia
+			{
+				return uploadComponent.mediaVO;
+			}
+			
+			public function set userId(id:Number):void
+			{
+				uploadComponent.userId = id;
+			}
+
+			
+			//
+			// Boutons PopUp
+			//
+			
+			private function submit():void
+			{
+				var e:IdEvent = new IdEvent(IdEvent.ADD);
+				e.data = mediaVO.id;
+				
+				dispatchEvent(e);
+				
+				PopUpManager.removePopUp(this);
+			}
+			
+			private function cancel():void
+			{
+				PopUpManager.removePopUp(this);
+			}
+			
+		]]>
+	</mx:Script>	
+
+
+	<mx:VBox horizontalAlign="center" paddingTop="30" width="100%">
+		<mx:HBox width="100%" paddingLeft="30" paddingRight="30">
+			<component:UploadPopUpAdmin id="uploadComponent" width="100%" />
+		</mx:HBox>
+		<mx:HBox width="100%" paddingLeft="110" paddingTop="0" horizontalAlign="left">
+			<component:CustomMediaPlayer id="mediaPlayer" width="173" height="132" />
+		</mx:HBox>
+		<mx:HBox width="100%" paddingTop="20" >
+			<mx:Label width="70%" textAlign="right" text="" />
+			<mx:Button label="OK" id="okButton" click="submit();"/>
+			<mx:Button label="Annuler" click="cancel();"/>
+		</mx:HBox>
+	</mx:VBox>
+	
+</mx:TitleWindow>

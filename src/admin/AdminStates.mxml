@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<mx:Canvas 
+	xmlns:mx="http://www.adobe.com/2006/mxml"
+	xmlns:component="components.*"
+	
+	width="100%" height="100%"
+	creationComplete="init()"
+	xmlns:components="admin.components.*">
+		
+	<mx:Script>
+		<![CDATA[
+			
+			import org.concert_urbain.touratour.events.UserEvent;
+			
+			private function init():void
+			{
+			}
+			
+			public function authentification():void
+			{
+				currentState = "authentification";
+			}
+			
+			public function connectToBrowserWithUserId(userId:Number):void
+			{
+				currentState = "browser";
+				
+				browserComponent.adminUserId = userId;
+				addEventListener(UserEvent.NOT_AN_ADMIN, onUserNoAnAdmin, false, 0, true);
+			}
+			
+			public function onUserNoAnAdmin(e:Event):void
+			{
+				currentState = "authentification";
+			}			
+			
+			public function disconnect():void
+			{
+				browserComponent.adminUserId = -1;
+				authentificationComponent.clearTextFields();
+				currentState = "authentification";
+			}			
+		]]>
+	</mx:Script>
+	
+	
+	<mx:states>
+		<mx:State name="authentification">
+			<mx:AddChild position="lastChild">
+				<components:AdminAuthentification horizontalAlign="center" id="authentificationComponent" width="500" />
+			</mx:AddChild>
+		</mx:State>
+		<mx:State name="browser">
+			<mx:AddChild position="lastChild">
+				<components:AdminBrowser id="browserComponent" width="100%" height="100%" />
+			</mx:AddChild>
+		</mx:State>
+	</mx:states>
+
+</mx:Canvas>

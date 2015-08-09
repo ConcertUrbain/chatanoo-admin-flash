@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<mx:TitleWindow 
+	xmlns:mx="http://www.adobe.com/2006/mxml" 
+	xmlns:component="dialogs.*"
+	
+	layout="absolute" width="500" height="460" 
+	showCloseButton="true"
+	
+	title="Ajouter un media"
+	
+	close="cancel();"
+	creationComplete="init()"
+	>
+	
+	<mx:Script>
+		<![CDATA[
+			import mx.collections.ArrayCollection;
+			import org.concert_urbain.touratour.events.IdEvent;
+		
+			import mx.managers.PopUpManager;
+			import org.concert_urbain.touratour.events.VOEvent;
+
+			private function init():void
+			{
+				var types:Array = ["Picture", "Video", "Sound", "Text"];
+				mediaTypes.dataProvider = new ArrayCollection(types);
+			}
+			
+			private function submit():void
+			{
+				var e:IdEvent = new IdEvent(IdEvent.ADD);
+				e.data = mediaTypes.selectedItem;
+				
+				dispatchEvent(e);
+				
+				PopUpManager.removePopUp(this);
+			}
+			
+			private function cancel():void
+			{
+				PopUpManager.removePopUp(this);
+			}
+			
+		]]>
+	</mx:Script>	
+
+
+	<mx:VBox horizontalAlign="center" paddingTop="30" width="100%">
+		<mx:HBox width="100%">
+			<mx:Label width="100" textAlign="right" text="Type" />
+			<mx:ComboBox width="300" id="mediaTypes" />
+		</mx:HBox>
+		<mx:HBox width="100%" paddingTop="20" >
+			<mx:Label width="100" textAlign="right" text="" />
+			<mx:Button label="OK" click="submit();"/>
+			<mx:Button label="Annuler" click="cancel();"/>
+		</mx:HBox>
+	</mx:VBox>
+	
+</mx:TitleWindow>

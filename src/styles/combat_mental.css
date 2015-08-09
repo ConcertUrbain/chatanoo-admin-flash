@@ -1,0 +1,32 @@
+/* Styles généraux */
+
+Application {
+	borderColor:#FF0000; /* debug */
+	paddingLeft:0;
+}
+
+Container, Canvas {
+	paddingLeft:0;
+	paddingTop:0;
+	paddingRight:0;
+	paddingBottom:0;
+	borderThickness:0; /* debug (1 -> matérialise les bords des containers) */
+	borderStyle:none;
+	horizontalGap:4;
+	verticalGap:4;
+	cornerRadius:0;
+}
+
+Panel {
+	backgroundAlpha:0;
+	borderThickness:0;
+	borderThicknessBottom:0;
+	borderThicknessLeft:0;
+	borderThicknessRight:0;
+	borderThicknessTop:0;
+	headerHeight:0;
+	dropShadowEnabled:0;
+}
+
+
+

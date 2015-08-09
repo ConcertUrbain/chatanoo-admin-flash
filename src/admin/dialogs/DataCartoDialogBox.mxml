@@ -1,0 +1,182 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<mx:TitleWindow 
+	xmlns:mx="http://www.adobe.com/2006/mxml" 
+	xmlns:component="dialogs.*"
+	
+	layout="absolute" width="100%" height="100%" 
+	showCloseButton="true"
+	
+	title="Modifier la position sur la carte"
+	backgroundAlpha="0.70"
+	
+	horizontalScrollPolicy="off" verticalScrollPolicy="off"
+	
+	close="cancel();"
+	xmlns:components="components.*"
+	creationComplete="init();"
+	>
+	
+	
+	
+	<mx:Script>
+		<![CDATA[
+			import mx.controls.Alert;
+			import mx.managers.PopUpManager;
+			
+			import org.concert_urbain.touratour.api.vos.datas.CartoData;			
+			import org.concert_urbain.touratour.events.VOEvent;
+		
+			private var _vo:CartoData;
+			private var _x:Number;
+			private var _y:Number;
+			
+			
+			public function init():void
+			{
+				map.addEventListener(Event.CHANGE, onChangePositionOnMap, false, 0, true);
+				
+				xValue.addEventListener(Event.CHANGE, onChangeXInTextField, false, 0, true);
+				yValue.addEventListener(Event.CHANGE, onChangeYInTextField, false, 0, true);
+			}
+
+			private function onChangePositionOnMap(e:Event):void
+			{
+				// On récupère la position du marker sur la carte
+				_x = map.latitude;
+				_y = map.longitude;
+				
+				updateTextFields();
+			}
+			
+			private function onChangeXInTextField(e:Event):void
+			{
+			}
+
+			private function onChangeYInTextField(e:Event):void
+			{
+			}
+			
+			public function set vo(o:CartoData):void
+			{
+				_vo = o;
+				
+				_x = _vo.x;
+				_y = _vo.y;
+				updateTextFields();
+				
+				map.latitude = _x;
+				map.longitude = _y;
+				updateMap();
+			}
+			
+			public function updateMap():void
+			{
+				map.update();
+			}
+			
+			//
+			// Type de carte
+			//
+			
+			public function set mapType(t:String):void
+			{
+				switch(t)
+				{
+					case "GoogleMaps_Satellite":
+						map.setMapTypeToSatellite();
+						break;
+						
+					case "GoogleMaps_Normal":
+						map.setMapTypeToNormal();
+						break;
+					
+					case "GoogleMaps_Hybride":
+						map.setMapTypeToHybrid();
+						break;
+					
+					case "Fichier":
+					case "Aucune":
+					default:
+				}
+			}
+
+			//
+			// Règlage de la carte
+			//
+			
+			public function set mapZoom(zoom:Number):void
+			{
+				map.zoom  = zoom
+			}
+
+			public function set mapCenterLatitude(l:Number):void
+			{
+				map.mapCenterLatitude  = l;
+			}
+
+			public function set mapCenterLongitude(l:Number):void
+			{
+				map.mapCenterLongitude  = l;
+			}
+
+			private function placeMarkerAtCenter():void
+			{
+				// On modifie la position du marker (au centre de la carte)
+				_x = map.latitude = map.mapCenterLatitude;
+				_y = map.longitude = map.mapCenterLongitude;
+				map.updateMarker();
+				updateTextFields();
+			}
+
+			//
+			//
+			//
+			
+			private function updateTextFields():void
+			{
+				xValue.text = String(_x);
+				yValue.text = String(_y);
+			}
+			
+			private function submit():void {
+				_vo.x = Number(xValue.text);
+				_vo.y = Number(yValue.text);
+				
+				dispatchEvent(new VOEvent(VOEvent.CHANGE, _vo));
+				
+				PopUpManager.removePopUp(this);
+			}
+		
+			private function cancel():void {
+				PopUpManager.removePopUp(this);
+			}
+			
+		]]>
+	</mx:Script>	
+
+	<mx:HBox width="100%" height="100%">
+		<mx:VBox horizontalAlign="left" paddingTop="30" width="200" height="100%">
+			<mx:HBox width="100%">
+				<mx:Label width="70" textAlign="right" text="longitude" />
+				<mx:TextInput width="100" id="xValue" restrict="0-9." />
+			</mx:HBox>
+			<mx:HBox width="100%">
+				<mx:Label width="70" textAlign="right" text="latitude" />
+				<mx:TextInput width="100" id="yValue" restrict="0-9." />
+			</mx:HBox>
+			<mx:HBox width="100%" paddingTop="20" >
+				<mx:Label width="130" textAlign="right" text="Positionner au centre" />
+				<mx:Button label="x" click="placeMarkerAtCenter();" />
+			</mx:HBox>
+			<mx:HBox width="100%" paddingTop="20" paddingLeft="40" >
+				<mx:Button label="OK" click="submit();" />
+				<mx:Button label="Annuler" click="cancel();"/>
+			</mx:HBox>
+		</mx:VBox>
+		<mx:VBox width="100%" height="100%" paddingTop="10" paddingBottom="10" paddingRight="10">
+			<components:GoogleMapsPosition id="map" width="100%" height="100%" />
+		</mx:VBox>
+	</mx:HBox>
+	
+</mx:TitleWindow>

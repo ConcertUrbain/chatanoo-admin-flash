@@ -1,0 +1,94 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<mx:Application 
+	
+	xmlns:mx="http://www.adobe.com/2006/mxml" 
+	xmlns:component="components.*" 
+	
+	width="100%" height="100%"
+	layout="absolute"
+	
+	applicationComplete="init();"
+	xmlns:components="admin.components.*" xmlns:admin="admin.*">
+	
+	<mx:Style source="styles/admin.css" />
+	
+	<mx:Script>
+		<![CDATA[
+			
+			// SDK 4.5 : import mx.core.FlexGlobals;
+			
+			import org.concert_urbain.touratour.events.UserEvent;
+			import org.concert_urbain.utils.FlexFlashVars;
+			import org.concert_urbain.touratour.ProjectsApiKeys;
+	
+			private function init():void
+			{
+				// FlashVars
+				// Pour mémoire SDK 4.5 : var fv:FlexFlashVars = new FlexFlashVars(FlexGlobals.topLevelApplication.parameters);
+				
+				//
+				// SDK 3.5 :
+				//
+				
+				var fv:FlexFlashVars = new FlexFlashVars(Application.application.parameters);
+				
+				if (fv.getVariable("googleMapsKey") == "")
+				{
+					// Par défaut : GoogleMap API key
+					this.parameters.googleMapsKey = ProjectsApiKeys.GMAPS_API_KEY_Dring93;
+				}
+				
+				if (fv.getVariable("apiKey") == "")
+				{
+					// Par défaut : WS API key
+					// this.parameters.apiKey = ProjectsApiKeys.WS_API_KEY_Dring93;
+					// this.parameters.apiKey = ProjectsApiKeys.WS_API_KEY_BonheurBrut;
+					// this.parameters.apiKey = ProjectsApiKeys.WS_API_KEY_MJC_Nogent;
+					this.parameters.apiKey = ProjectsApiKeys.WS_API_KEY_MJC_Nanterre;
+				}
+				
+				if (fv.getVariable("wsURL") == "")
+				{
+					// Par défaut : WS_URL
+					this.parameters.wsURL = ProjectsApiKeys.WS_CHATANOO_URL;
+				}
+				
+				// On passe par l'authentification :
+				adminState.currentState = "authentification";
+				
+				// Attente de l'authentification de l'utilisateur :
+				addEventListener(UserEvent.AUTHENTIFY, onUserAuthenfication, false, 0, true);
+				
+				// Attente de l'authentification de l'utilisateur :
+				addEventListener(UserEvent.DISCONNECT, onUserDisconnect, false, 0, true);
+			}
+			
+			private function onUserAuthenfication(e:UserEvent):void
+			{
+				removeEventListener(UserEvent.AUTHENTIFY, onUserAuthenfication);
+				
+				// Ouverture de l'admin
+				adminState.connectToBrowserWithUserId(e.id);
+			}
+			
+			private function onUserDisconnect(e:Event):void
+			{
+				e.stopPropagation();
+				
+				// Attente de l'authentification de l'utilisateur :
+				addEventListener(UserEvent.AUTHENTIFY, onUserAuthenfication, false, 0, true);
+				
+				// Ouverture de l'admin
+				adminState.disconnect();
+			}
+			
+		]]>
+	</mx:Script>
+	
+	
+	<mx:VBox width="100%" height="100%">
+			<admin:AdminStates id="adminState" />
+	</mx:VBox>
+	
+</mx:Application>

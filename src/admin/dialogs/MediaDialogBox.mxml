@@ -1,0 +1,132 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<mx:TitleWindow 
+	xmlns:mx="http://www.adobe.com/2006/mxml" 
+	xmlns:component="dialogs.*"
+	
+	layout="absolute" width="500" height="460" 
+	showCloseButton="true"
+	
+	title="Modifier le media"
+	
+	close="cancel();"
+	>
+	
+	<mx:Script>
+		<![CDATA[
+			import mx.collections.ArrayCollection;
+			import org.concert_urbain.touratour.api.vos.medias.SoundMedia;
+			import org.concert_urbain.touratour.api.vos.medias.PictureMedia;
+			import mx.managers.PopUpManager;
+			import org.concert_urbain.touratour.events.VOEvent;
+		
+			private var _vo:Object;
+			public var _mediaType:String;
+
+
+			public function set mediaType(type:String):void
+			{
+				_mediaType = type;
+				
+				var isNotPicture:Boolean = _mediaType != "Picture"
+				totalTime.editable = isNotPicture;
+				totalTime.enabled = isNotPicture;
+
+				var isNotSound:Boolean = _mediaType != "Sound"
+				mediaHeight.editable = isNotSound;
+				mediaHeight.enabled = isNotSound;
+				
+				mediaWidth.editable = isNotSound;
+				mediaWidth.enabled = isNotSound;
+			}
+
+			
+			public function set vo(o:*):void
+			{
+				_vo = o;
+				
+				itemTitle.text = _vo.title == null ? "" : _vo.title;
+				description.text = _vo.description == null ? "" : _vo.description;
+				mediaUrl.text = _vo.url == null ? "" : _vo.url;
+				
+				if (! (o is PictureMedia))
+				{
+					totalTime.text = _vo.totalTime == null ? "" : _vo.totalTime;
+				}
+				
+				if (! (o is SoundMedia))
+				{
+					mediaWidth.text = _vo.width == null ? "" : _vo.width;
+					mediaHeight.text = _vo.height == null ? "" : _vo.height;
+				}
+			}
+			
+			private function submit():void
+			{
+				_vo.title = itemTitle.text;
+				_vo.description = description.text;
+				_vo.url = mediaUrl.text;
+				_vo.preview = preview.text;
+				
+				if (! (_vo is PictureMedia))
+				{
+					_vo.totalTime = totalTime.text;
+				}
+				
+				if (! (_vo is SoundMedia))
+				{
+					_vo.width = mediaWidth.text;
+					_vo.height = mediaHeight.text;
+				}
+				
+				dispatchEvent(new VOEvent(VOEvent.CHANGE, _vo));
+				
+				PopUpManager.removePopUp(this);
+			}
+			
+			private function cancel():void
+			{
+				PopUpManager.removePopUp(this);
+			}
+			
+		]]>
+	</mx:Script>	
+
+
+	<mx:VBox horizontalAlign="center" paddingTop="30" width="100%">
+		<mx:HBox width="100%">
+			<mx:Label width="100" textAlign="right" text="Titre" />
+			<mx:TextArea width="300" height="80" id="itemTitle" />
+		</mx:HBox>
+		<mx:HBox width="100%">
+			<mx:Label width="100" textAlign="right" text="Description" />
+			<mx:TextArea width="300" height="80" id="description" />
+		</mx:HBox>
+		<mx:HBox width="100%">
+			<mx:Label width="100" textAlign="right" text="Url" />
+			<mx:TextInput width="300" id="mediaUrl" />
+		</mx:HBox>
+		<mx:HBox width="100%">
+			<mx:Label width="100" textAlign="right" text="Largeur" />
+			<mx:TextInput width="300" id="mediaWidth" />
+		</mx:HBox>
+		<mx:HBox width="100%">
+			<mx:Label width="100" textAlign="right" text="Hauteur" />
+			<mx:TextInput width="300" id="mediaHeight" />
+		</mx:HBox>
+		<mx:HBox width="100%">
+			<mx:Label width="100" textAlign="right" text="Durée" />
+			<mx:TextInput width="300" id="totalTime" />
+		</mx:HBox>
+		<mx:HBox width="100%">
+			<mx:Label width="100" textAlign="right" text="Preview" />
+			<mx:TextInput width="300" id="preview" />
+		</mx:HBox>
+		<mx:HBox width="100%" paddingTop="20" >
+			<mx:Label width="100" textAlign="right" text="" />
+			<mx:Button label="OK" click="submit();"/>
+			<mx:Button label="Annuler" click="cancel();"/>
+		</mx:HBox>
+	</mx:VBox>
+	
+</mx:TitleWindow>

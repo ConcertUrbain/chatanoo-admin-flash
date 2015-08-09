@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<mx:TitleWindow 
+	xmlns:mx="http://www.adobe.com/2006/mxml" 
+	xmlns:component="dialogs.*"
+	
+	layout="absolute" width="500" height="330" 
+	showCloseButton="true"
+	
+	title="Modifier l'item"
+	
+	close="cancel();"
+	>
+	
+	<mx:Script>
+		<![CDATA[
+			import mx.managers.PopUpManager;
+			import org.concert_urbain.touratour.events.VOEvent;
+			import org.concert_urbain.touratour.api.vos.Item;
+		
+			private var _vo:Item;
+			
+			public function set vo(o:Item):void
+			{
+				_vo = o;
+				itemTitle.text = _vo.title == null ? "" : _vo.title;
+				description.text = _vo.description == null ? "" : _vo.description;
+			}
+			
+			private function submit():void {
+				_vo.title = itemTitle.text;
+				_vo.description = description.text;
+				
+				dispatchEvent(new VOEvent(VOEvent.CHANGE, _vo));
+				PopUpManager.removePopUp(this);
+			}
+			
+			private function cancel():void {
+				PopUpManager.removePopUp(this);
+			}
+			
+		]]>
+	</mx:Script>	
+
+
+	<mx:VBox horizontalAlign="center" paddingTop="30" width="100%">
+		<mx:HBox width="100%">
+			<mx:Label width="100" textAlign="right" text="Titre" />
+			<mx:TextArea width="300" height="80" id="itemTitle" />
+		</mx:HBox>
+		<mx:HBox width="100%">
+			<mx:Label width="100" textAlign="right" text="Description" />
+			<mx:TextArea width="300" height="80" id="description" />
+		</mx:HBox>
+		<mx:HBox width="100%" paddingTop="20" >
+			<mx:Label width="100" textAlign="right" text="" />
+			<mx:Button label="OK" click="submit();"/>
+			<mx:Button label="Annuler" click="cancel();"/>
+		</mx:HBox>
+	</mx:VBox>
+	
+</mx:TitleWindow>

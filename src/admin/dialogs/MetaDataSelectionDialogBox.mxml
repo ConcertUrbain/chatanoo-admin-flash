@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<mx:TitleWindow 
+	xmlns:mx="http://www.adobe.com/2006/mxml" 
+	xmlns:component="dialogs.*"
+	
+	layout="absolute" width="420" height="240" 
+	showCloseButton="true"
+	
+	title="Sélection de la métadonnée"
+	
+	close="cancel();"
+	xmlns:components="components.*"
+	creationComplete="init();"
+	>
+	
+	
+	
+	<mx:Script>
+		<![CDATA[
+			import mx.collections.ArrayCollection;
+			import mx.controls.Alert;
+		
+			import mx.managers.PopUpManager;
+			import org.concert_urbain.touratour.events.VOEvent;
+			import org.concert_urbain.touratour.api.vos.Meta;
+		
+			private var _metaDataType:String = "";
+			
+
+			public function init():void
+			{
+			}
+
+			public function get metaDataType():String
+			{
+				return _metaDataType;
+			}
+			
+			public function set metaDataType(type:String):void
+			{
+				_metaDataType = type;
+			}
+			
+			public function set values(a:ArrayCollection):void
+			{
+				contentValues.dataProvider = a;
+				okButton.enabled = (a.length > 0);
+			}
+			
+			private function submit():void
+			{	
+				var vo:Meta = contentValues.selectedItem.data as Meta;
+				
+				var e:VOEvent = new VOEvent(VOEvent.ADD, vo);
+				e.param = metaDataType;
+				
+				dispatchEvent(e);
+				
+				PopUpManager.removePopUp(this);
+			}
+			
+			private function cancel():void {
+				PopUpManager.removePopUp(this);
+			}
+			
+		]]>
+	</mx:Script>	
+
+	<mx:HBox width="100%" height="100%">
+		<mx:VBox horizontalAlign="center" paddingTop="30" width="400" height="100%">
+			<mx:HBox width="100%">
+				<mx:Label width="100" textAlign="right" text="Metadonnées" />
+				<mx:ComboBox width="200" id="contentValues" />
+			</mx:HBox>
+			<mx:HBox width="100%" paddingTop="20" >
+				<mx:Label width="100" textAlign="right" text="" />
+				<mx:Button id="okButton" label="OK" click="submit();" />
+				<mx:Button label="Annuler" click="cancel();"/>
+			</mx:HBox>
+		</mx:VBox>
+	</mx:HBox>
+	
+</mx:TitleWindow>

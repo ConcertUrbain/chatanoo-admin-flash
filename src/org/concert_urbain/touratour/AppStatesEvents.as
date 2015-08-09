@@ -1,0 +1,1 @@
+﻿package org.concert_urbain.touratour{	public class AppStatesEvents	{			public static const GO_VISUALIZATION:String = "org.concert_urbain.touratour.appstatesevents.go_visualization";		public static const GO_UPLOAD:String = "org.concert_urbain.touratour.appstatesevents.go_upload";	}}

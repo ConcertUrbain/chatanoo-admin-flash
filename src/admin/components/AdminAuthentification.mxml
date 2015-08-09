@@ -1,0 +1,136 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<mx:Panel 
+	xmlns:mx="http://www.adobe.com/2006/mxml" 
+	>
+
+	<mx:Script>
+		
+		<![CDATA[
+			import mx.controls.Alert;
+			import mx.core.Application;
+			import mx.rpc.events.ResultEvent;
+			
+			import org.concert_urbain.touratour.api.TAT;
+			import org.concert_urbain.touratour.api.vos.*;
+			import org.concert_urbain.touratour.api.core.events.ServiceEvent;
+			import org.concert_urbain.touratour.api.core.requests.AbstractServiceRequest;
+			import org.concert_urbain.touratour.api.vos.events.VoEvent;
+			import org.concert_urbain.touratour.events.UserEvent;
+			
+			private var _loginUIID:String;
+
+			public function clearTextFields():void
+			{
+				pseudo.text = "";
+				password.text = "";
+			}
+			
+			private function submit(e:MouseEvent):void
+			{
+				var userPseudo:String = pseudo.text;
+				var userPassword:String = password.text;
+				
+				if ((userPseudo == "Clef") || (userPseudo == "mazerte"))  return;
+				
+				var appParams:Object = Application.application.parameters;
+				
+				var ws:TAT = TAT.getInstance();
+				ws.init(appParams.wsURL, appParams.apiKey);
+				
+				// Dring 13	
+				// TAT.getInstance().init('http://ws.dring93.org', 'qJlCaSsBbYBYypwF9TT8KmCOxhuZ3wIj');  
+				
+				// Tour à Tour
+				// TAT.getInstance().init('http://ws.dring93.org', 'TAT_CaSsBbYBYypwF9TT8KmCOxhuZ');  
+				
+				// Dring 93				
+				// TAT.getInstance().init('http://ws.dring93.org', 'D93_qJlCaSsBbYBYypwF9TT8KmCOxhuZ');
+				
+				// Test Denis				
+				// TAT.getInstance().init('http://ws.dring93.org', 'Test_CaSsBbYBYypwF9TT8KmCOxhuZ');
+				
+				// Bonheur Brut Collectif				
+				// TAT.getInstance().init('http://ws.dring93.org', 'BBC_qJlCaSsBbYBYypwF9TT8KmCOxhuZ');
+								
+				// Nogent				
+				// TAT.getInstance().init('http://ws.chatanoo.org', '3WUWr77hbTf6gaH48fnUj9yhp442vbeH');
+				
+				ws.addEventListener(ServiceEvent.LOGIN_SUCCESS, _loginSuccessHandler);
+				ws.addEventListener(ServiceEvent.LOGIN_ERROR, _errorHandler);
+				
+				_loginUIID = TAT.getInstance().login(userPseudo, userPassword);
+				
+			}
+			
+			private function _errorHandler(event:ServiceEvent):void
+			{
+				Alert.show("Login/Password incorrect", "Authentification");
+			}
+
+			private function _loginSuccessHandler(event:ServiceEvent):void
+			{
+				if (event.result == false)
+				{
+					Alert.show("Utilisateur non reconnu", "Authentification");
+				}
+				else
+				{
+					// On doit récupérer l'id de l'utilisateur
+					
+					var userPseudo:String = pseudo.text;
+					var userPassword:String = password.text;
+					
+					var ws:TAT = TAT.getInstance();
+					ws.usersService.getUserByLogin(userPseudo, userPassword);
+					ws.addEventListener(ServiceEvent.USERS_GET_USER_BY_LOGIN_METHOD_SUCCESS, getUserByLoginSuccess, false, 0, true);
+					ws.addEventListener(ServiceEvent.USERS_GET_USER_BY_LOGIN_METHOD_ERROR, getUserByLoginError, false, 0, true);					
+				}
+			}
+			
+			private function getUserByLoginError(e:ServiceEvent):void
+			{
+			}
+			
+			private function getUserByLoginSuccess(e:ServiceEvent):void
+			{
+				var ws:TAT = TAT.getInstance();
+				ws.removeEventListener(ServiceEvent.USERS_GET_USER_BY_LOGIN_METHOD_SUCCESS, getUserByLoginSuccess);
+				ws.removeEventListener(ServiceEvent.USERS_GET_USER_BY_LOGIN_METHOD_ERROR, getUserByLoginError);
+				
+				var serverUserVO:User = e.result as User;
+				
+				if (serverUserVO is User)
+				{
+					trace("serverUserVO id=", serverUserVO.id)
+					dispatchEvent(new UserEvent(UserEvent.AUTHENTIFY, serverUserVO.id, true));
+				}
+				else
+				{
+					Alert.show("Utilisateur non reconnu", "Authentification");
+				}
+			}
+		]]>
+	</mx:Script>
+
+	<mx:HBox width="100%"  paddingBottom="20">
+		<!-- Formulaire d'Authentification -->
+		<mx:Form width="100%">
+			<mx:FormItem width="100%">
+				<mx:HBox width="100%">
+					<mx:Label text="Pseudo" width="100" textAlign="right" />
+					<mx:TextInput width="50%" id="pseudo" text=""/>
+				</mx:HBox>
+			</mx:FormItem>
+			<mx:FormItem width="100%">
+				<mx:HBox  width="100%">
+					<mx:Label text="Mot de passe" width="100" textAlign="right" />
+					<mx:TextInput width="50%" id="password" text="" displayAsPassword="true" />
+					<mx:Button id="boutonAuthentifier"  label="Valider" click="submit(event)" />
+				</mx:HBox>
+			</mx:FormItem>
+			
+		</mx:Form>
+	</mx:HBox>
+
+</mx:Panel>

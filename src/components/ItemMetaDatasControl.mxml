@@ -1,0 +1,503 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<mx:Canvas 
+		xmlns:mx="http://www.adobe.com/2006/mxml"
+		xmlns:component="components.*"
+		xmlns:local="*"
+		  
+		horizontalScrollPolicy="off" verticalScrollPolicy="off" 
+		width="100%" height="100%"
+
+		creationComplete="init();"
+	>
+	
+	<mx:Script>
+		<![CDATA[
+			import admin.dialogs.DataCartoDialogBox;
+			
+			import mx.collections.ArrayCollection;
+			import mx.containers.TitleWindow;
+			import mx.controls.Alert;
+			import mx.events.ListEvent;
+			import mx.managers.CursorManager;
+			import mx.managers.PopUpManager;
+			
+			import org.concert_urbain.touratour.AppStatesEvents;
+			import org.concert_urbain.touratour.api.TAT;
+			import org.concert_urbain.touratour.api.core.events.ServiceEvent;
+			import org.concert_urbain.touratour.api.core.requests.AbstractServiceRequest;
+			import org.concert_urbain.touratour.api.vos.*;
+			import org.concert_urbain.touratour.api.vos.collections.MultiVoCollection;
+			import org.concert_urbain.touratour.api.vos.collections.VoCollection;
+			import org.concert_urbain.touratour.api.vos.datas.*;
+			import org.concert_urbain.touratour.api.vos.events.VoEvent;
+			import org.concert_urbain.touratour.api.vos.medias.*;
+			import org.concert_urbain.touratour.events.*;
+			
+		    
+			// Id de la query (détermine la liste des mots-clés, s'il y a une carte...)
+			private var _queryId:Number;
+			
+			// Id de l'item (associé aux métadonnées)
+			private var _itemId:Number;
+	
+			// Données la query
+			private var _queryKeyWords:Array;
+			private var _queryMapZoom:Number;
+			private var _queryMapType:String;
+			private var _queryCartoVO:CartoData;
+			
+			public var hasMetaData:Boolean = false;
+			
+			// Données de l'Item
+			private var _itemLatitude:Number;
+			private var _itemLongitude:Number;
+			private var _itemCartoVO:CartoData;
+			private var _itemKeyWordVO:Meta;
+			
+			// PopUp
+			private var _dataCartoBox:DataCartoDialogBox;
+			private var _cartoPopUpRect:Rectangle;
+
+			//
+			// Initialisations
+			//
+			
+			public function init():void
+			{
+				boutonEnvoyer.addEventListener(MouseEvent.CLICK, submitHandler);
+			}
+			
+			public function set queryId(id:Number):void
+			{
+				_queryId = id;
+				
+				loadDatasOfQuery()
+			}				
+			
+			public function set itemId(id:Number):void
+			{
+				_itemId = id;
+			}				
+	
+			//
+			// Données cartographique de la Query :
+			//
+
+			public function loadDatasOfQuery():void
+			{				
+				// Par défaut, pas de donnée cartographique
+				_queryCartoVO = null;
+				
+				CursorManager.setBusyCursor();
+
+				var ws:TAT = TAT.getInstance();
+				ws.datasService.getDatasByQueryId(_queryId);
+				ws.addEventListener(ServiceEvent.DATAS_GET_DATAS_BY_QUERY_ID_METHOD_SUCCESS, onLoadDatasOfQuery, false, 0, true);
+				ws.addEventListener(ServiceEvent.DATAS_GET_DATAS_BY_QUERY_ID_METHOD_ERROR, onLoadDatasOfQueryError, false, 0, true);
+			}
+			
+			public function onLoadDatasOfQueryError(e:ServiceEvent):void
+			{
+				CursorManager.removeBusyCursor();
+				
+				var ws:TAT = TAT.getInstance();
+				ws.removeEventListener(ServiceEvent.DATAS_GET_DATAS_BY_QUERY_ID_METHOD_SUCCESS, onLoadDatasOfQuery);
+				ws.removeEventListener(ServiceEvent.DATAS_GET_DATAS_BY_QUERY_ID_METHOD_ERROR, onLoadDatasOfQueryError);
+			}
+			
+			public function onLoadDatasOfQuery(e:ServiceEvent):void
+			{
+				CursorManager.removeBusyCursor();
+				
+				var ws:TAT = TAT.getInstance();
+				ws.removeEventListener(ServiceEvent.DATAS_GET_DATAS_BY_QUERY_ID_METHOD_SUCCESS, onLoadDatasOfQuery);
+				ws.removeEventListener(ServiceEvent.DATAS_GET_DATAS_BY_QUERY_ID_METHOD_ERROR, onLoadDatasOfQueryError);
+				
+				var datas:Object = e.result as Object;
+				
+				
+				// Cartographie (position du centre de la carte)
+
+				if (datas != null)
+				{
+					var dataCarto:Array = datas['Carto'];
+					
+					if (dataCarto is Array)
+					{
+						var i:uint;
+						var n:uint = dataCarto.length;
+						var dataVO:IVo;
+						
+						for (i=0; i<n; i++)
+						{
+							dataVO = dataCarto[i] as IVo;
+							if (dataVO is CartoData)
+							{
+								// Il n'y a qu'une donnée cartographique pour une Query
+								_queryCartoVO = dataVO as CartoData;
+								break;
+							}
+						}
+					}
+				}
+				
+				// Chargement des métas-données
+				loadMetasOfQuery()
+			}
+
+
+			//
+			// Méta-données de la Query :
+			//
+
+			public function loadMetasOfQuery():void
+			{				
+				// Par défaut :
+				_queryKeyWords = new Array();
+				_queryMapZoom = -1;
+				_queryMapType = "";
+				
+
+				CursorManager.setBusyCursor();
+				
+				var ws:TAT = TAT.getInstance();
+				ws.searchService.getMetasByVo(_queryId, "Query");
+				ws.addEventListener(ServiceEvent.SEARCH_GET_METAS_BY_VO_METHOD_SUCCESS, onLoadMetasOfQuery, false, 0, true);
+				ws.addEventListener(ServiceEvent.SEARCH_GET_METAS_BY_VO_METHOD_ERROR, onLoadMetasOfQueryError, false, 0, true);
+			}
+			
+			
+			public function onLoadMetasOfQueryError(e:ServiceEvent):void
+			{
+				CursorManager.removeBusyCursor();
+				
+				var ws:TAT = TAT.getInstance();
+				ws.removeEventListener(ServiceEvent.SEARCH_GET_METAS_BY_VO_METHOD_SUCCESS, onLoadMetasOfQuery);
+				ws.removeEventListener(ServiceEvent.SEARCH_GET_METAS_BY_VO_METHOD_ERROR, onLoadMetasOfQueryError);
+			}
+			
+			
+			public function onLoadMetasOfQuery(e:ServiceEvent):void
+			{
+				CursorManager.removeBusyCursor();
+				
+				var ws:TAT = TAT.getInstance();
+				ws.removeEventListener(ServiceEvent.SEARCH_GET_METAS_BY_VO_METHOD_SUCCESS, onLoadMetasOfQuery);
+				ws.removeEventListener(ServiceEvent.SEARCH_GET_METAS_BY_VO_METHOD_ERROR, onLoadMetasOfQueryError);
+				
+				var metas:Array = e.result as Array;
+
+				
+				// Mots-clés
+				var keyWordsDp:ArrayCollection = new ArrayCollection();
+				keyWordsDp.addItem({label:"Sélectionnez un mot-clé"});
+				
+				var i:uint;
+				
+				if (metas is Array)
+				{
+					var n:uint = metas.length;
+					var metaVO:Meta;
+					
+					for (i=0; i<n; i++)
+					{
+						metaVO = metas[i] as Meta;
+						if (metaVO is Meta)
+						{
+							switch (metaVO.name)
+							{
+								case "KeyWord":
+									// Liste des meta-données de type "KeyWord" de la query
+									_queryKeyWords.push(metaVO);
+									
+									// Pour le ComboBox
+									keyWordsDp.addItem({label:metaVO.content, vo:metaVO});
+									break;
+								
+								case "MapType":
+									_queryMapType = metaVO.content;
+									break;
+								
+								case "MapZoom":
+									_queryMapZoom = Number(metaVO.content);
+									break;
+							}
+						}
+					}
+				}
+				
+				// Données du comboBox
+				keyWordsComboBox.dataProvider = keyWordsDp;
+				keyWordsLabel.enabled = keyWordsComboBox.enabled  = _queryKeyWords.length > 0;
+				
+				// Carte				
+				var isMap:Boolean = _queryCartoVO && _queryMapType && (_queryMapType != "Aucune");
+				if (isMap)
+				{
+					mapLabel.enabled = false;
+					mapDialogBoxButton.enabled = true;
+					
+					// Par défaut :
+					_itemCartoVO = new CartoData();
+					_itemCartoVO.id = 0;
+					_itemCartoVO.x = _queryCartoVO.x;
+					_itemCartoVO.y = _queryCartoVO.y;
+
+					latitudeText.text = _itemCartoVO.x.toString();
+					latitudeText.enabled = true;
+					latitudeLabel.enabled = true;
+					
+					longitudeText.text = _itemCartoVO.y.toString();
+					longitudeText.enabled = true;
+					longitudeLabel.enabled = true;
+				}
+				else
+				{
+					mapLabel.enabled = false;
+					mapDialogBoxButton.enabled = false;
+					
+					latitudeText.text = "";
+					latitudeText.enabled = false;
+					latitudeLabel.enabled = false;
+					
+					longitudeText.text = "";
+					longitudeText.enabled = false;
+					longitudeLabel.enabled = false;
+				}
+				
+				hasMetaData = mapDialogBoxButton.enabled || keyWordsComboBox.enabled;
+				
+				boutonEnvoyer.enabled = hasMetaData;
+				
+				dispatchEvent(new Event(Event.INIT));
+			}
+			
+			
+			private function onChangeKeyWord(e:ListEvent):void
+			{
+				if (keyWordsComboBox.selectedItem.vo)
+				{
+					_itemKeyWordVO = keyWordsComboBox.selectedItem.vo as Meta;
+				}
+			}
+			
+
+			
+			private function openMapDialogBox(e:MouseEvent):void
+			{
+				_dataCartoBox = openDialogBox(_dataCartoBox, DataCartoDialogBox) as DataCartoDialogBox;
+				_dataCartoBox.addEventListener(VOEvent.CHANGE, changeDataCartoVO, false, 0, true);
+				
+				// Données de la carte (centre, zoom, position du marker)
+				_dataCartoBox.mapCenterLatitude = _queryCartoVO.x;
+				_dataCartoBox.mapCenterLongitude = _queryCartoVO.y;
+				_dataCartoBox.mapZoom = _queryMapZoom;
+				_dataCartoBox.mapType = _queryMapType;
+				_dataCartoBox.vo = _itemCartoVO;
+				_dataCartoBox.updateMap();
+			}
+			
+			
+			private function changeDataCartoVO(e:VOEvent):void
+			{
+				_itemCartoVO = e.vo as CartoData;
+				
+				latitudeText.text = _itemCartoVO.x.toString();
+				longitudeText.text = _itemCartoVO.y.toString();
+			}	
+			
+			public function set cartoPopUpRectangle(r:Rectangle):void
+			{
+				_cartoPopUpRect = r;
+			}
+			
+			
+			// --------------------------------------------------------------------
+			//
+			// Pops Ups
+			//
+			// --------------------------------------------------------------------
+
+			private function openDialogBox(dialog:TitleWindow, dialogClass:Class):TitleWindow
+			{
+				// Lazy loading :
+				
+				if (!dialog)
+				{
+					dialog = PopUpManager.createPopUp(this, dialogClass, true) as TitleWindow;
+					
+				}
+				else
+				{
+					PopUpManager.addPopUp(dialog,this,true);
+				}
+				
+				// Affichage :
+				
+				if (_cartoPopUpRect)
+				{
+					dialog.x = _cartoPopUpRect.x;
+					dialog.y = _cartoPopUpRect.y;
+					dialog.width = _cartoPopUpRect.width;
+					dialog.height = _cartoPopUpRect.height;
+				}
+				else
+				{
+					PopUpManager.centerPopUp(dialog);
+				}
+				
+				return dialog;
+			}
+			
+			
+			// --------------------------------------------------------------------
+			//
+			// Envoi des données à la base (associé à un itemId)
+			//
+			// --------------------------------------------------------------------
+
+	        protected function submitHandler(event:Event):void
+	        {
+				if (_itemId)
+				{     	
+					// KeyWord :
+					if (_itemKeyWordVO)
+					{
+						addKeyWordToItem(_itemId, _itemKeyWordVO);
+					} 
+					else
+					{
+						// Carto
+						if (_itemCartoVO) addCartoToItem(_itemId, _itemCartoVO);
+					}
+					
+					dispatchEvent(new Event(Event.CONNECT));
+				}
+			}
+
+			private function addKeyWordToItem(itemId:Number, metaVO:Meta):void
+			{			
+				cursorManager.setBusyCursor();
+				
+				var ws:TAT = TAT.getInstance();
+				ws.itemsService.addMetaIntoItem(metaVO, itemId);
+				ws.addEventListener(ServiceEvent.ITEMS_ADD_META_INTO_ITEM_METHOD_SUCCESS, addKeyWordToItemResult, false, 0, true);
+				ws.addEventListener(ServiceEvent.ITEMS_ADD_META_INTO_ITEM_METHOD_ERROR, addKeyWordToItemResultError, false, 0, true);
+			}
+			
+			private function addKeyWordToItemResultError(e:ServiceEvent):void
+			{
+				CursorManager.removeBusyCursor();
+				
+				var ws:TAT = TAT.getInstance();
+				ws.removeEventListener(ServiceEvent.ITEMS_ADD_META_INTO_ITEM_METHOD_SUCCESS, addKeyWordToItemResult);
+				ws.removeEventListener(ServiceEvent.ITEMS_ADD_META_INTO_ITEM_METHOD_ERROR, addKeyWordToItemResultError);
+			}
+			
+			private function addKeyWordToItemResult(e:ServiceEvent):void
+			{
+				CursorManager.removeBusyCursor();
+				
+				var ws:TAT = TAT.getInstance();
+				ws.removeEventListener(ServiceEvent.ITEMS_ADD_META_INTO_ITEM_METHOD_SUCCESS, addKeyWordToItemResult);
+				ws.removeEventListener(ServiceEvent.ITEMS_ADD_META_INTO_ITEM_METHOD_ERROR, addKeyWordToItemResultError);
+				
+				var metaId:Number = Number(e.result);
+				
+				var request:AbstractServiceRequest = e.request;
+				var params:Array = request.params;
+				
+				var metaVO:Meta = new Meta(params[0]);
+				metaVO.id = metaId;
+				
+				
+				if (_itemCartoVO) 
+				{
+					// Carto
+					addCartoToItem(_itemId, _itemCartoVO);
+				}
+				else
+				{
+					// Fin de l'envoi des Métadonnées
+					submitIsComplete()
+				}
+			}
+			
+			private function addCartoToItem(itemId:Number, dataVO:CartoData):void
+			{			
+				var ws:TAT = TAT.getInstance();
+				ws.itemsService.addDataIntoItem(dataVO, itemId);
+				ws.addEventListener(ServiceEvent.ITEMS_ADD_DATA_INTO_ITEM_METHOD_SUCCESS, addCartoToItemResult, false, 0, true);
+				ws.addEventListener(ServiceEvent.ITEMS_ADD_DATA_INTO_ITEM_METHOD_ERROR, addCartoToItemResultError, false, 0, true);						
+			}
+			
+			private function addCartoToItemResultError(e:ServiceEvent):void
+			{
+				CursorManager.removeBusyCursor();
+				
+				var ws:TAT = TAT.getInstance();
+				ws.removeEventListener(ServiceEvent.ITEMS_ADD_DATA_INTO_ITEM_METHOD_SUCCESS, addCartoToItemResult);
+				ws.removeEventListener(ServiceEvent.ITEMS_ADD_DATA_INTO_ITEM_METHOD_ERROR, addCartoToItemResultError);						
+			}
+			
+			private function addCartoToItemResult(e:ServiceEvent):void
+			{
+				CursorManager.removeBusyCursor();
+				
+				var ws:TAT = TAT.getInstance();
+				ws.removeEventListener(ServiceEvent.ITEMS_ADD_DATA_INTO_ITEM_METHOD_SUCCESS, addCartoToItemResult);
+				ws.removeEventListener(ServiceEvent.ITEMS_ADD_DATA_INTO_ITEM_METHOD_ERROR, addCartoToItemResultError);						
+				
+				var dataId:Number = Number(e.result);
+				
+				// Fin de l'envoi des Métadonnées
+				submitIsComplete()
+			}
+			
+			//
+			// Fin de l'envoi des Métadonnées
+			//
+			
+			private function submitIsComplete():void
+			{
+				cursorManager.removeBusyCursor();
+				dispatchEvent(new Event(Event.COMPLETE));
+			}
+				
+		]]>
+		
+	</mx:Script>
+
+
+	<mx:VBox width="100%" height="100%" >
+		
+		<mx:Label text="Description de votre média :" styleName="titreUpload" />
+			
+		<mx:HBox width="100%">
+		
+			<mx:VBox width="100%">
+				<mx:Label id="keyWordsLabel" text="Mot-clé :" styleName="titre" />
+				<mx:ComboBox id="keyWordsComboBox" change="onChangeKeyWord(event);" width="80%"  />
+			</mx:VBox>
+		
+			<mx:VBox width="100%">
+				<mx:Label id="mapLabel" text="Positionnement sur la carte :" styleName="titre" />
+				<mx:Button id="mapDialogBoxButton" enabled="false" label="Carte..." click="openMapDialogBox(event)" />
+				<mx:HBox>
+					<mx:Label id="latitudeLabel" text="Latitude :" styleName="titre" />
+					<mx:Text id="latitudeText" />
+				</mx:HBox>
+				<mx:HBox>
+					<mx:Label id="longitudeLabel" text="Longitude :" styleName="titre" />
+					<mx:Text id="longitudeText" />
+				</mx:HBox>
+				<mx:HBox paddingTop="10">
+					<mx:Button id="boutonEnvoyer"  label="Envoyer" />
+				</mx:HBox>
+			</mx:VBox>
+			
+		</mx:HBox>
+	</mx:VBox>
+		
+</mx:Canvas>

@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<mx:TitleWindow 
+	xmlns:mx="http://www.adobe.com/2006/mxml" 
+	xmlns:component="dialogs.*"
+	
+	layout="absolute" width="420" height="280" 
+	showCloseButton="true"
+	
+	title="Modifier la valeur de la métadonnée"
+	
+	close="cancel();"
+	xmlns:components="components.*"
+	creationComplete="init();"
+	>
+	
+	
+	
+	<mx:Script>
+		<![CDATA[
+			import mx.controls.Alert;
+		
+			import mx.managers.PopUpManager;
+			import org.concert_urbain.touratour.events.VOEvent;
+			import org.concert_urbain.touratour.api.vos.Meta;
+		
+			private var _vo:Meta;
+			private var _name:String;
+			private var _content:String;
+			
+			public function init():void
+			{
+			}
+
+			public function set vo(o:Meta):void
+			{
+				_vo = o;
+				_name = _vo.name;
+				_content = _vo.content;
+				updateTextFields();
+			}
+			
+			private function updateTextFields():void
+			{
+				typeLabel.text = _name;
+				contentValue.text = _content;
+			}
+			
+			private function submit():void {
+				_vo.content = contentValue.text;
+				
+				dispatchEvent(new VOEvent(VOEvent.CHANGE, _vo));
+				
+				PopUpManager.removePopUp(this);
+			}
+			
+			private function cancel():void {
+				PopUpManager.removePopUp(this);
+			}
+			
+		]]>
+	</mx:Script>	
+
+	<mx:HBox width="100%" height="100%">
+		<mx:VBox horizontalAlign="center" paddingTop="30" width="400" height="100%">
+			<mx:HBox width="100%">
+				<mx:Label width="100" textAlign="right" text="nom" />
+				<mx:Label id="typeLabel" width="200" textAlign="left" text="" />
+			</mx:HBox>
+			<mx:HBox width="100%">
+				<mx:Label width="100" textAlign="right" text="valeur" />
+				<mx:TextInput width="200" id="contentValue" />
+			</mx:HBox>
+			<mx:HBox width="100%" paddingTop="20" >
+				<mx:Label width="100" textAlign="right" text="" />
+				<mx:Button label="OK" click="submit();" />
+				<mx:Button label="Annuler" click="cancel();"/>
+			</mx:HBox>
+		</mx:VBox>
+	</mx:HBox>
+	
+</mx:TitleWindow>

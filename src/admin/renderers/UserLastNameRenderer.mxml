@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mx:VBox xmlns:mx="http://www.adobe.com/2006/mxml" width="100%">
+
+	<mx:Style source="../styles/renderers.css" />
+	
+	<mx:Text selectable="false" text="{data.vo.lastName}" width="100%"  />
+</mx:VBox>

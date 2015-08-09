@@ -1,0 +1,132 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<mx:TitleWindow 
+	xmlns:mx="http://www.adobe.com/2006/mxml" 
+	xmlns:component="dialogs.*"
+	
+	layout="absolute" width="420" height="280" 
+	showCloseButton="true"
+	
+	title="Modifier la valeur de la métadonnée"
+	
+	close="cancel();"
+	xmlns:components="components.*"
+	creationComplete="init();"
+	>
+	
+	
+	
+	<mx:Script>
+		<![CDATA[
+			import mx.collections.ArrayCollection;
+			import mx.controls.Alert;
+			import mx.managers.PopUpManager;
+			
+			import org.concert_urbain.touratour.api.vos.Meta;
+			import org.concert_urbain.touratour.api.vos.User;
+			import org.concert_urbain.touratour.events.VOEvent;
+		
+			private var _vo:Meta;
+			private var _name:String;
+			private var _content:String;
+			
+			public function init():void
+			{
+			}
+
+			public function set dataType(type:String):void
+			{
+				var metaDataNames:ArrayCollection = new ArrayCollection();
+				
+				switch(type)
+				{
+					case "QueryDataType":
+						
+						// Metadonnées associées aux Queries
+						metaDataNames.addItem({label:"AXE_HORIZONTAL_GAUCHE", data:"AXE_HORIZONTAL_GAUCHE" });
+						metaDataNames.addItem({label:"AXE_HORIZONTAL_DROITE", data:"AXE_HORIZONTAL_DROITE" });
+						metaDataNames.addItem({label:"AXE_VERTICAL_BAS", data:"AXE_VERTICAL_BAS" });
+						metaDataNames.addItem({label:"AXE_VERTICAL_HAUT", data:"AXE_VERTICAL_HAUT" });
+						metaDataNames.addItem({label:"CARTE_LONGITUDE_MIN", data:"CARTE_LONGITUDE_MIN" });
+						metaDataNames.addItem({label:"CARTE_LONGITUDE_MAX", data:"CARTE_LONGITUDE_MAX" });
+						metaDataNames.addItem({label:"CARTE_LATITUDE_MIN", data:"CARTE_LATITUDE_MIN" });
+						metaDataNames.addItem({label:"CARTE_LATITUDE_MAX", data:"CARTE_LATITUDE_MAX" });
+						metaDataNames.addItem({label:"BACKGROUND_IMAGE", data:"BACKGROUND_IMAGE" });
+						break;
+					
+					case "DataType":
+						
+						// Metadonnées associées au projet (i.e. à la session)
+						metaDataNames.addItem({label:"BACKGROUND_IMAGE_ACCUEIL", data:"BACKGROUND_IMAGE_ACCUEIL", target:"Session" });
+						break;
+				}
+				
+				nameValues.dataProvider = metaDataNames;
+			}
+				
+			public function set vo(o:Meta):void
+			{
+				_vo = o;
+				_name = _vo.name;
+				_content = _vo.content;
+				
+				updateTextFields();
+			}
+			
+			private function updateTextFields():void
+			{
+				contentValue.text = _content;
+				
+				// var nameValues.dataProvider
+				var metaDataNames:ArrayCollection = nameValues.dataProvider as ArrayCollection;
+				var i:uint;
+				var n:int = metaDataNames.length;
+				var item:Object;
+				
+				for (i=0 ; i<n ; i++)
+				{
+					item = metaDataNames.getItemAt(i);
+					if (item.data == _name)
+					{
+						nameValues.selectedIndex = i;
+						break;
+					}
+				}
+			}
+			
+			private function submit():void {
+				
+				_vo.name = nameValues.selectedItem.data;
+				_vo.content = contentValue.text;
+				
+				dispatchEvent(new VOEvent(VOEvent.CHANGE, _vo));
+				
+				PopUpManager.removePopUp(this);
+			}
+			
+			private function cancel():void {
+				PopUpManager.removePopUp(this);
+			}
+			
+		]]>
+	</mx:Script>	
+
+	<mx:HBox width="100%" height="100%">
+		<mx:VBox horizontalAlign="center" paddingTop="30" width="400" height="100%">
+			<mx:HBox width="100%">
+				<mx:Label width="100" textAlign="right" text="nom" />
+				<mx:ComboBox id="nameValues" />
+			</mx:HBox>
+			<mx:HBox width="100%">
+				<mx:Label width="100" textAlign="right" text="valeur" />
+				<mx:TextInput width="200" id="contentValue" />
+			</mx:HBox>
+			<mx:HBox width="100%" paddingTop="20" >
+				<mx:Label width="100" textAlign="right" text="" />
+				<mx:Button label="OK" click="submit();" />
+				<mx:Button label="Annuler" click="cancel();"/>
+			</mx:HBox>
+		</mx:VBox>
+	</mx:HBox>
+	
+</mx:TitleWindow>

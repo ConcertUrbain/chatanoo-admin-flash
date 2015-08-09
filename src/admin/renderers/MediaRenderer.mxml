@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mx:VBox xmlns:mx="http://www.adobe.com/2006/mxml" width="100%">
+
+	<mx:Script>
+		<![CDATA[
+			
+			import org.concert_urbain.touratour.api.vos.medias.*;
+			
+			private function getContent(mediaVO:AbstractMedia):String
+			{
+				if (mediaVO)
+				{
+					if (mediaVO is TextMedia)
+					{
+						return TextMedia(mediaVO).content;
+					}
+					else if (mediaVO is SoundMedia)
+					{
+						return SoundMedia(mediaVO).url;
+					}
+					else if (mediaVO is PictureMedia)
+					{
+						return PictureMedia(mediaVO).url;
+					}
+					else if (mediaVO is VideoMedia)
+					{
+						return VideoMedia(mediaVO).url;
+					}
+				}
+				
+				return "";
+			}
+			
+		]]>
+	</mx:Script>
+	
+	<mx:Style source="../styles/renderers.css" />
+	
+	<mx:Text selectable="false" text="{getContent(data.vo)}" width="100%"  />
+</mx:VBox>

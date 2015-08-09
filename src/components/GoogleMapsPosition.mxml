@@ -1,0 +1,261 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<mx:Canvas 
+
+	xmlns:mx="http://www.adobe.com/2006/mxml"
+	xmlns:component="components.*"
+	
+	width="100%" height="100%"
+	
+	creationComplete="init();"		
+	
+	>
+
+	 
+	 <mx:Script>
+	 	<![CDATA[
+			import com.google.maps.*;
+			import com.google.maps.controls.*;
+			import com.google.maps.interfaces.IMapType;
+			import com.google.maps.overlays.Marker;
+			import com.google.maps.overlays.MarkerOptions;
+			
+			import mx.core.Application;
+			
+			
+			// Google Map
+			private var map:Map;
+			
+			// Données de la carte
+			private var _mapIsAutoLoad:Boolean = true;
+			private var _mapIsReady:Boolean = false;
+			private var _mapCenterLatitude:Number;
+			private var _mapCenterLongitude:Number;
+			private var _mapZoom:Number = 17;
+			private var _mapType:String;
+			
+			// Position du marker
+			private var _marker:Marker;
+			private var _latitude:Number;
+			private var _longitude:Number;
+			
+			public static const HYBRID_MAP_TYPE:String = "HYBRID_MAP_TYPE";
+			public static const NORMAL_MAP_TYPE:String = "NORMAL_MAP_TYPE";
+			public static const SATELLITE_MAP_TYPE:String = "SATELLITE_MAP_TYPE";
+
+			
+			private function init():void
+			{
+				if (_mapIsAutoLoad == true) {
+					initMap();
+				}
+			}
+			
+			public function initMap():void
+			{
+				if (! map)
+				{
+					// GoogleMap (la clé doit être définie lors de l'initialisation de l'application)
+					map = new Map();
+					map.percentWidth = 100;
+					map.percentHeight = 100;
+					map.addEventListener(MapEvent.MAP_READY, onMapReady, false, 0, true);
+					map.key = Application.application.parameters.googleMapsKey;
+					addChild(map);
+				}
+			}
+				
+	 		private function onMapReady(e:Event):void
+	 		{
+	 			_mapIsReady = true;
+	 			
+	 			// Positionnement du centre de la carte
+				map.setCenter(new LatLng(_mapCenterLatitude, _mapCenterLongitude), _mapZoom, iMapType);
+				
+				var markerOptions:MarkerOptions = new MarkerOptions();
+				markerOptions.draggable = true;
+				
+				// Par défaut, on met le marker au centre de la carte
+				if (isNaN(_latitude)) _latitude = _mapCenterLatitude;
+				if (isNaN(_longitude)) _longitude = _mapCenterLongitude;
+				
+				// Positionnement du marker
+				_marker = new Marker(new LatLng(_latitude, _longitude), markerOptions);
+				_marker.addEventListener(MapMouseEvent.DRAG_START, onStartDragMarker, false, 0, true);
+				_marker.addEventListener(MapMouseEvent.DRAG_END, onStopDragMarker, false, 0, true);
+				map.addOverlay(_marker);
+
+				//controls ( http://code.google.com/apis/maps/documentation/flash/controls.html )
+				map.addControl(new ZoomControl());
+				map.addControl(new PositionControl());
+				map.addControl(new MapTypeControl());
+				
+				// Couleur de fond
+				/*
+				var options:MapOptions = new MapOptions( { backgroundFillStyle: { alpha: Alpha.OPAQUE, color: 0xFF0000 }});
+				map.setInitOptions(options);	
+				*/
+			}
+	 		
+	 		private function onStartDragMarker (event:Event):void
+	 		{
+	 		}
+	 		
+	 		private function onStopDragMarker (event:Event):void
+	 		{
+	 			var marker:Marker = event.target as Marker;
+	 			var latLng:LatLng = marker.getLatLng();
+	 			
+	 			_latitude = latLng.lat();
+	 			_longitude = latLng.lng();
+				
+	 			dispatchEvent(new Event(Event.CHANGE, true));
+	 		}
+	 		
+			public function addZoom():void
+			{
+				// Zoom
+				map.addControl(new ZoomControl())
+			}
+
+			public function update():void
+			{
+				updateMap();
+				updateMarker();
+			}
+
+			public function updateMap():void
+			{
+				if (_mapIsReady)
+				{
+					// Mise à jour de la carte
+					map.setCenter(new LatLng(_mapCenterLatitude, _mapCenterLongitude), _mapZoom, iMapType);
+				}
+			}
+			
+			public function updateMarker():void
+			{
+				if (_mapIsReady)
+				{
+					// Mise à jour du marker
+					_marker.setLatLng(new LatLng(_latitude, _longitude));
+				}
+			}
+
+
+
+	 		//
+	 		// Getters / Setters
+	 		//
+	 		
+			
+			//
+			// Définit si la carte se charge dès la création du composant
+			//
+			
+			public function set autoLoad(b:Boolean):void
+			{
+				_mapIsAutoLoad = b;
+			}
+			
+
+			//
+			// Position du centre de la carte
+			//
+
+			public function set mapCenterLatitude(l:Number):void
+			{
+				_mapCenterLatitude = l;
+			}
+
+			public function get mapCenterLatitude():Number
+			{
+				return _mapCenterLatitude;
+			}
+
+
+			public function set mapCenterLongitude(l:Number):void
+			{
+				_mapCenterLongitude = l;
+			}
+
+			public function get mapCenterLongitude():Number
+			{
+				return _mapCenterLongitude;
+			}
+	 		
+	 		
+			//
+			// Position du marker sur la carte
+			//
+
+			public function set latitude(l:Number):void
+			{
+				_latitude = l;
+			}
+
+			public function get latitude():Number
+			{
+				return _latitude;
+			}
+
+
+			public function set longitude(l:Number):void
+			{
+				_longitude = l;
+			}
+
+			public function get longitude():Number
+			{
+				return _longitude;
+			}
+
+
+			//
+			// Niveau de Zoom
+			//
+			
+			public function set zoom (z:Number):void
+			{
+				_mapZoom = z;
+			}
+
+			public function get zoom():Number
+			{
+				return _mapZoom;
+			}
+
+			//
+			// Type de carte
+			//
+
+			public function setMapTypeToHybrid ():void
+			{
+				_mapType = HYBRID_MAP_TYPE;
+			}
+
+			public function setMapTypeToNormal ():void
+			{
+				_mapType = NORMAL_MAP_TYPE;
+			}
+
+			public function setMapTypeToSatellite ():void
+			{
+				_mapType = SATELLITE_MAP_TYPE;
+			}
+			
+			private function get iMapType():IMapType
+			{
+				switch(_mapType)
+				{
+					case HYBRID_MAP_TYPE: return MapType.HYBRID_MAP_TYPE;
+					case NORMAL_MAP_TYPE: return MapType.NORMAL_MAP_TYPE;
+					case SATELLITE_MAP_TYPE: return MapType.SATELLITE_MAP_TYPE;
+					default: return MapType.NORMAL_MAP_TYPE;
+				}
+			}
+			
+	 	]]>
+	 </mx:Script>
+
+</mx:Canvas>

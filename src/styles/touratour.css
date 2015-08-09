@@ -1,0 +1,62 @@
+/* Styles généraux */
+
+Application {
+	borderColor:#FF0000; /* debug */
+	paddingLeft:0;
+}
+
+Container, Spacer, Canvas {
+	paddingLeft:0;
+	paddingTop:0;
+	paddingRight:0;
+	paddingBottom:0;
+	borderThickness:0; /* debug (1 -> matérialise les bords des containers) */
+	borderStyle:none;
+	horizontalGap:4;
+	verticalGap:4;
+	cornerRadius:0;
+}
+
+Panel {
+	backgroundAlpha:0;
+	borderThickness:0;
+	borderThicknessBottom:0;
+	borderThicknessLeft:0;
+	borderThicknessRight:0;
+	borderThicknessTop:0;
+	headerHeight:0;
+	dropShadowEnabled:0;
+}
+
+.titreUpload {
+	fontSize:15px;
+	color:white;
+}
+
+
+/* debug */
+
+.PanelDebug {
+	borderColor:#FFFFFF; 
+	borderThickness:1;
+}
+
+.VBoxDebug
+{
+	borderColor:#00FF00;
+	borderThickness:1;
+}
+
+.HBoxDebug
+{
+	borderColor:#FFFF00;
+	borderThickness:1;
+}
+
+.CanvasDebug
+{
+	borderColor:#0000FF;
+	borderThickness:1;
+}
+
+

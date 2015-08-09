@@ -1,0 +1,160 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<mx:Canvas 
+	
+	xmlns:mx="http://www.adobe.com/2006/mxml" 
+	xmlns:component="components.*"
+	xmlns:local="*"
+	
+	horizontalScrollPolicy="off" verticalScrollPolicy="off"
+	
+	creationComplete = "init();"
+	>
+
+	
+	<mx:Script>
+		<![CDATA[
+
+		import org.concert_urbain.touratour.MediaViewer;
+		import org.concert_urbain.touratour.events.*;
+		import org.concert_urbain.utils.*;
+
+		
+		private var mediaViewer:MediaViewer;
+		
+		private var _baseURL:String = "http://mc.chatanoo.org/m/";
+		private var _mediaPath:String = "";
+
+		private function init():void
+		{
+			if (mediaViewer) return;
+			
+			//
+			// Médias
+			//
+			
+			mediaViewer = new MediaViewer();
+			mediaViewer.autoPlay = false;
+			mediaViewer.addEventListener(MediaViewer.MEDIA_END, onMediaPlayed, false, 0, true);
+			mediaViewer.addEventListener(MediaViewer.MEDIA_PROGRESS, onMediaProgress, false, 0, true);
+			
+			mediaViewer.baseURL = _baseURL + _mediaPath;
+
+			media.mediaParentMovieClip.addChild(mediaViewer);
+			
+			media.playBtn.mouseChildren = media.playBtn.mouseEnabled = media.playBtn.visible = false;
+			media.pauseBtn.mouseChildren = media.pauseBtn.mouseEnabled = media.pauseBtn.visible = false;
+			
+			media.loading_txt.text = "";
+			media.loading_txt.mouseEnabled = false;
+			
+			media.halo_interieur.mouseChildren = media.halo_interieur.mouseEnabled = false;
+			
+			media.mouseEnabled = false;
+			
+			media.addEventListener(MediaViewer.MEDIA_RESUME, onResumeMediaPlayer, false, 0, true);
+			media.addEventListener(MediaViewer.MEDIA_PAUSE , onPauseMediaPlayer, false, 0, true);
+			media.addEventListener(MediaViewer.MEDIA_CHANGE, onChangeMedia, false, 0, true);
+		}
+		
+		private function onMediaProgress(e:ProgressEvent):void
+		{
+			var percent:int = 100 * e.bytesLoaded / e.bytesTotal;
+			media.loading_txt.text = percent >= 100  ? "" : String(percent + "%");
+		}
+
+		private function onMediaPlayed(e:Event):void
+		{
+		}
+
+
+		//
+		// BaseURL
+		//
+
+		public function set baseURL(path:String):void
+		{
+			_baseURL = path;	
+		}
+			
+		public function set mediaPath(path:String):void
+		{
+			_mediaPath = path;	
+			
+			if (mediaViewer) mediaViewer.baseURL = _baseURL + _mediaPath;
+		}
+			
+		//
+		// medias : liste associative par type des mediaVOs
+		//
+		
+		public function displayFirstMedia(medias:Array):void
+		{
+			media.loading_txt.text = "";
+			
+			if (! mediaViewer) init();
+			
+			mediaViewer.displayFirstMedia(medias);
+		}
+
+			
+		//
+		//
+		//
+		
+		public function openMedia(mediaVO:Object, typeMedia:String):void
+		{
+			media.loading_txt.text = "";
+			
+			if (mediaVO)
+			{
+				if (typeMedia == "Text")
+				{
+					mediaViewer.displayMedia(mediaVO);
+				}
+				else if (mediaVO.url == null)
+				{
+					mediaViewer.clear();
+				}
+				else
+				{
+					mediaViewer.displayMedia(mediaVO);
+				}
+			}
+		}
+
+		public function clear():void
+		{
+			media.loading_txt.text = "";
+			if (mediaViewer) mediaViewer.clear();
+		}
+
+
+		
+		//
+		// Boutons du player 
+		//
+
+		private function onResumeMediaPlayer(e:Event):void
+		{
+			media.playBtn.visible = false;
+		}
+		
+		private function onPauseMediaPlayer(e:Event):void
+		{
+			media.playBtn.visible = true;
+		}
+		
+		private function onChangeMedia(e:MediaEvent):void
+		{
+			media.playBtn.visible = e.mediaType == "video" ? false : true;
+			media.playBtn.visible = false;
+			media.pauseBtn.visible = false;
+		}
+		
+		]]>
+	</mx:Script>
+	
+	<local:MediaPlayer id="media" width="173" height="132" />
+	
+</mx:Canvas>

@@ -1,0 +1,24 @@
+
+.titre, .titreUpload {
+	font-size:12px;
+	font-weight:bold;
+	color:#000000;
+}
+
+.addButton {
+    fillAlphas:1.0, 0.9;
+    fillColors:#00FF00,#00FF00;
+	color:white;
+}
+
+.HBoxDebug
+{
+	borderColor:#FFFF00;
+	borderThickness:1;
+}
+
+.VBoxDebug
+{
+	borderColor:#FF0000;
+	borderThickness:1;
+}

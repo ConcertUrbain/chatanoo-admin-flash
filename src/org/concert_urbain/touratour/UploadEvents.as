@@ -1,0 +1,1 @@
+﻿package org.concert_urbain.touratour{	public class UploadEvents	{			public static const UPLOAD_INIT:String = "org.concert_urbain.touratour.uploadevents.init";		public static const UPLOAD_SUCCESS:String = "org.concert_urbain.touratour.uploadevents.success";		public static const UPLOAD_ERROR:String = "org.concert_urbain.touratour..uploadevents.error";	}}

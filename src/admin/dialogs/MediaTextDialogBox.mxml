@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<mx:TitleWindow 
+	xmlns:mx="http://www.adobe.com/2006/mxml" 
+	xmlns:component="dialogs.*"
+	
+	layout="absolute" width="500" height="500" 
+	showCloseButton="true"
+	
+	title="Modifier le texte"
+	
+	close="cancel();"
+	>
+	
+	<mx:Script>
+		<![CDATA[
+			import org.concert_urbain.touratour.api.vos.medias.TextMedia;
+			import mx.managers.PopUpManager;
+			import org.concert_urbain.touratour.events.VOEvent;
+		
+			private var _vo:Object;
+
+			
+			public function set vo(o:TextMedia):void
+			{
+				_vo = o;
+				
+				itemTitle.text = _vo.title == null ? "" : _vo.title;
+				description.text = _vo.description == null ? "" : _vo.description;
+				content.text = _vo.content == null ? "" : _vo.content;
+				preview.text = _vo.preview == null ? "" : _vo.preview;
+			}
+			
+			private function submit():void
+			{
+				_vo.title = itemTitle.text;
+				_vo.description = description.text;
+				_vo.content = content.text;
+				_vo.preview = preview.text;
+				
+				dispatchEvent(new VOEvent(VOEvent.CHANGE, _vo));
+				PopUpManager.removePopUp(this);
+			}
+			
+			private function cancel():void
+			{
+				PopUpManager.removePopUp(this);
+			}
+			
+		]]>
+	</mx:Script>	
+
+
+	<mx:VBox horizontalAlign="center" paddingTop="30" width="100%">
+		<mx:HBox width="100%">
+			<mx:Label width="100" textAlign="right" text="Titre" />
+			<mx:TextArea width="300" height="80" id="itemTitle" />
+		</mx:HBox>
+		<mx:HBox width="100%">
+			<mx:Label width="100" textAlign="right" text="Description" />
+			<mx:TextArea width="300" height="80" id="description" />
+		</mx:HBox>
+		<mx:HBox width="100%">
+			<mx:Label width="100" textAlign="right" text="Texte" />
+			<mx:TextArea width="300" height="80" id="content" />
+		</mx:HBox>
+		<mx:HBox width="100%">
+			<mx:Label width="100" textAlign="right" text="Preview" />
+			<mx:TextArea width="300" height="80" id="preview" />
+		</mx:HBox>
+		<mx:HBox width="100%" paddingTop="20" >
+			<mx:Label width="100" textAlign="right" text="" />
+			<mx:Button label="OK" click="submit();"/>
+			<mx:Button label="Annuler" click="cancel();"/>
+		</mx:HBox>
+	</mx:VBox>
+	
+</mx:TitleWindow>
