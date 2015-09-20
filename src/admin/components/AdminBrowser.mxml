@@ -18,30 +18,61 @@
 	
 	<mx:Script>
 		<![CDATA[
-			import org.concert_urbain.touratour.ProjectsApiKeys;
-			import org.concert_urbain.touratour.DataGridVO.*;
 			import mx.collections.ArrayCollection;
-			import mx.collections.*;
+			import mx.collections.Sort;
+			import mx.collections.SortField;
 			import mx.containers.TitleWindow;
 			import mx.controls.Alert;
+			import mx.core.Application;
 			import mx.events.ListEvent;
 			import mx.managers.CursorManager;
 			import mx.managers.PopUpManager;
 			
+			import admin.dialogs.AddMediaDialogBox;
+			import admin.dialogs.CommentDialogBox;
+			import admin.dialogs.DataCartoDialogBox;
+			import admin.dialogs.DeleteVODialogBox;
+			import admin.dialogs.ItemDialogBox;
+			import admin.dialogs.MediaDialogBox;
+			import admin.dialogs.MediaTextDialogBox;
+			import admin.dialogs.MetaDataDialogBox;
+			import admin.dialogs.MetaDataSelectionDialogBox;
+			import admin.dialogs.MetaDataWithSelectionNameDialogBox;
+			import admin.dialogs.QueryDialogBox;
+			import admin.dialogs.UploadMediaDialogBox;
+			import admin.dialogs.UserDialogBox;
+			import admin.dialogs.UserSelectionDialogBox;
+			import admin.dialogs.VoteDialogBox;
+			
+			import org.concert_urbain.touratour.ProjectsApiKeys;
+			import org.concert_urbain.touratour.DataGridVO.CommentDataGridItem;
 			import org.concert_urbain.touratour.DataGridVO.DataGridItem;
 			import org.concert_urbain.touratour.api.TAT;
 			import org.concert_urbain.touratour.api.core.events.ServiceEvent;
 			import org.concert_urbain.touratour.api.core.requests.AbstractServiceRequest;
+			import org.concert_urbain.touratour.api.vos.Comment;
+			import org.concert_urbain.touratour.api.vos.IVo;
+			import org.concert_urbain.touratour.api.vos.Item;
+			import org.concert_urbain.touratour.api.vos.Meta;
+			import org.concert_urbain.touratour.api.vos.Query;
+			import org.concert_urbain.touratour.api.vos.User;
 			import org.concert_urbain.touratour.api.vos.collections.MultiVoCollection;
 			import org.concert_urbain.touratour.api.vos.collections.VoCollection;
+			import org.concert_urbain.touratour.api.vos.datas.AbstractData;
+			import org.concert_urbain.touratour.api.vos.datas.CartoData;
+			import org.concert_urbain.touratour.api.vos.datas.VoteData;
 			import org.concert_urbain.touratour.api.vos.events.VoEvent;
-			import org.concert_urbain.touratour.api.vos.*;
-			import org.concert_urbain.touratour.api.vos.medias.*;
-			import org.concert_urbain.touratour.api.vos.datas.*;			
-			import org.concert_urbain.touratour.events.*
-			import org.concert_urbain.touratour.*;
-			import org.concert_urbain.utils.*;
-			import admin.dialogs.*;
+			import org.concert_urbain.touratour.api.vos.medias.AbstractMedia;
+			import org.concert_urbain.touratour.api.vos.medias.PictureMedia;
+			import org.concert_urbain.touratour.api.vos.medias.SoundMedia;
+			import org.concert_urbain.touratour.api.vos.medias.TextMedia;
+			import org.concert_urbain.touratour.api.vos.medias.VideoMedia;
+			import org.concert_urbain.touratour.events.DeleteGridRowEvent;
+			import org.concert_urbain.touratour.events.EditGridRowEvent;
+			import org.concert_urbain.touratour.events.IdEvent;
+			import org.concert_urbain.touratour.events.UserEvent;
+			import org.concert_urbain.touratour.events.VOEvent;
+			import org.concert_urbain.touratour.events.ValidGridRowEvent;
 
 			
 			
@@ -903,7 +934,12 @@
 			{
 				if (mediaMapPlayer && _queryMediaMaps)
 				{
+					var appParams:Object = Application.application.parameters;
+					
+					mediaMapPlayer.baseURL = appParams.mediaBaseURL;
+					mediaMapPlayer.mediaAmazonS3 = appParams.awsS3;
 					mediaMapPlayer.mediaPath = _mediaPath;
+					
 					mediaMapPlayer.displayFirstMedia(_queryMediaMaps);
 				}
 			}
@@ -1023,7 +1059,12 @@
 			{
 				if (itemPlayer && _itemMedias)
 				{
-					itemPlayer.mediaPath = _mediaPath;			
+					var appParams:Object = Application.application.parameters;
+					
+					itemPlayer.baseURL = appParams.mediaBaseURL;
+					itemPlayer.mediaAmazonS3 = appParams.awsS3;
+					itemPlayer.mediaPath = _mediaPath;
+
 					itemPlayer.displayFirstMedia(_itemMedias);
 				}
 			}
@@ -1032,7 +1073,12 @@
 			{
 				if (mediasGrid.selectedItem)
 				{
+					var appParams:Object = Application.application.parameters;
+					
 					var mediaItem:Object = mediasGrid.selectedItem;
+					
+					mediaPlayer.baseURL = appParams.mediaBaseURL;
+					mediaPlayer.mediaAmazonS3 = appParams.awsS3;
 					mediaPlayer.mediaPath = _mediaPath;			
 					mediaPlayer.openMedia(mediaItem.vo, mediaItem.type); 
 				}

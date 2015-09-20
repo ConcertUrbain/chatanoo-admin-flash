@@ -45,13 +45,33 @@
 					// this.parameters.apiKey = ProjectsApiKeys.WS_API_KEY_Dring93;
 					// this.parameters.apiKey = ProjectsApiKeys.WS_API_KEY_BonheurBrut;
 					// this.parameters.apiKey = ProjectsApiKeys.WS_API_KEY_MJC_Nogent;
-					this.parameters.apiKey = ProjectsApiKeys.WS_API_KEY_MJC_Nanterre;
+					// this.parameters.apiKey = ProjectsApiKeys.WS_API_KEY_MJC_Nanterre;
+					
+					this.parameters.apiKey = ProjectsApiKeys.WS_API_KEY_MJC_AMZ_Paris4;
 				}
 				
 				if (fv.getVariable("wsURL") == "")
 				{
 					// Par défaut : WS_URL
-					this.parameters.wsURL = ProjectsApiKeys.WS_CHATANOO_URL;
+					this.parameters.wsURL = ProjectsApiKeys.WS_AMAZON_URL;
+				}
+				
+				if (fv.getVariable("mediaBaseURL") == "")
+				{
+					// Par défaut : MediaCenter
+					this.parameters.mediaBaseURL = "http://mc.chatanoo.org/m/";
+					
+					// Amazon S3
+					// this.parameters.mediaBaseURL = "http://medias.aws.chatanoo.org/";
+				}
+				
+				if (fv.getVariable("awsS3") == "")
+				{
+					// Par défaut : Chatanoo/FFMPEG
+					this.parameters.awsS3 = false;
+					
+					// Amazon
+					// this.parameters.awsS3 = true;
 				}
 				
 				// On passe par l'authentification :

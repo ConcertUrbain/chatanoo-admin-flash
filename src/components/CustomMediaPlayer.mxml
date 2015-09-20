@@ -24,6 +24,8 @@
 		
 		private var _baseURL:String = "http://mc.chatanoo.org/m/";
 		private var _mediaPath:String = "";
+		private var _mediaAmazonS3:Boolean;
+			
 
 		private function init():void
 		{
@@ -39,6 +41,7 @@
 			mediaViewer.addEventListener(MediaViewer.MEDIA_PROGRESS, onMediaProgress, false, 0, true);
 			
 			mediaViewer.baseURL = _baseURL + _mediaPath;
+			mediaViewer.mediaAmazonS3 = _mediaAmazonS3;
 
 			media.mediaParentMovieClip.addChild(mediaViewer);
 			
@@ -83,6 +86,14 @@
 			
 			if (mediaViewer) mediaViewer.baseURL = _baseURL + _mediaPath;
 		}
+			
+		public function set mediaAmazonS3(b:Boolean):void
+		{
+			_mediaAmazonS3 = b;
+			
+			if (mediaViewer) mediaViewer.mediaAmazonS3 = _mediaAmazonS3;
+		}
+
 			
 		//
 		// medias : liste associative par type des mediaVOs
